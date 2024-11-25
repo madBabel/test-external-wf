@@ -50,5 +50,5 @@ jobs:
             - name: Deploy
               id: deploy
               run: |
-                echo "resultado = Deploying to: ${{ inputs.target }} using tag ${{ needs.build.outputs.tag }}"  >> "$GITHUB_OUTPUT"
+                echo "resultado=Deploying to '${{ inputs.target }}' using tag '${{ needs.build.outputs.tag }}'"  >> "$GITHUB_OUTPUT"
         
