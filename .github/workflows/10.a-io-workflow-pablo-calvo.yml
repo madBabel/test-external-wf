@@ -1,0 +1,52 @@
+name: Inputs and Outputs
+on:
+  workflow_call: 
+    inputs:
+      dry-run:
+        description: 'Skip deployment and only print build output'
+        type: boolean           
+        default: false
+      target:
+        description: 'Which environment the workflow will target'
+        type: string
+        required: true
+      tag:
+        description: 'Release from which to build and deploy'
+        type: string
+        default: v3
+      build-status:
+        description: 'Choose the build status for the demo'
+        type: string
+        default: success   
+    outputs:
+        result: 
+            description: Result of deploy job
+            value: ${{ jobs.deploy.outputs.result }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.build.outputs.tag }}
+      status: ${{ steps.build.outputs.status }}
+    steps:          
+      - name: "Print GITHUB_OUTPUT path"
+        run: |
+          echo "{{ $GITHUB_OUTPUT }}" 
+      - name: Build
+        id: build
+        run: |
+          echo "status=${{ inputs.build-status }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{inputs.dry-run == false && needs.build.outputs.status == 'success'}}
+    environment: ${{ inputs.target }}
+    outputs:
+      result: ${{ steps.deploy.outputs.result }}
+    steps:          
+      - name: Deploy
+        id: deploy
+        run: |
+          echo "Deploying to : ${{ inputs.target }} using tag ${{ needs.build.outputs.tag }}" >> $GITHUB_OUTPUT  
